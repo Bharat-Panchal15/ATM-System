@@ -33,6 +33,11 @@ A simple command-line based ATM system simulation built in Python using Object-O
 
 ---
 
+## 👤 Author
+
+- Bharat Panchal  
+- [GitHub Profile](https://github.com/Bharat-Panchal15)
+
 ## ▶️ How to Run
 
 ```bash
