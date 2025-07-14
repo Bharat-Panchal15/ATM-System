@@ -9,20 +9,46 @@ class Account:
         print(f"\nAccount Balance for {self.name} is {self.balance}\n")
     
     def deposit(self,amount):
+        if amount < 2000:
+            print("You need to deposit atleast Rs.2000 on each transaction.\n")
+            return
+        
         self.balance += amount
         print(f"\nRs.{amount} deposited successfully into {self.name}'s account.\n")
     
     def withdraw(self,amount):
+        if amount < 3000 :
+            print("You need to withdraw atleast Rs.3000 on each transaction.\n")
+            return
+        
+        elif amount > (current_user.balance -  2500):
+            print("Insufficient Balance. You need atleast Rs.2500 in account for security.")
+            return
+        
         self.balance -= amount
         print(f"\nRs.{amount} withdrawn successfully from {self.name}'s account.\n")
     
-    def change_pin(self,new_pin):
+    def change_pin(self):
+        old_pin = int(input("Enter previous pin to confirm: "))
+        if self.acc_pin != old_pin:
+            print("Wrong pin please try again.")
+            return
+
+        print("Please enter new pin to update.")
+        new_pin = int(input("Enter new pin: "))
         self.acc_pin = new_pin
         print(f"Pin change successfully to {new_pin}")
 
 class ATMsystem:
     def __init__(self):
         self.accounts = []
+    
+    @staticmethod
+    def require_login(current_user,action_desc="perform this action"):
+        if not current_user:
+            print(f"Please login to {action_desc}")
+            return False
+        return True
     
     def create_acc(self,name,acc_no,pin,balance):
         new_acc = Account(name,acc_no,pin,balance)
@@ -36,114 +62,78 @@ class ATMsystem:
                 return acc
             
         print("\nLogin failed\n")
+        return None
     
-    def logout(self,acc):
-        self.accounts.remove(acc)
+    def logout(self):
         print("Logout Sucessful. Thanks for visiting our bank.")
         return None
             
+if __name__ == "__main__":
+    my_acc = ATMsystem()
+    current_user = None
 
-my_acc = ATMsystem()
-current_user = None
+    while True:
+        print("\n[1] Register new account")
+        print("[2] Login your account")
+        print("[3] View Balance")
+        print("[4] Deposit amount in account")
+        print("[5] Withdraw amount from account")
+        print("[6] Change pin of account")
+        print("[7] Logout from current account")
+        print("[8] Exit from current session\n")
 
-while True:
-    print("\n[1] Register new account")
-    print("[2] Login your account")
-    print("[3] View Balance")
-    print("[4] Deposit amount in account")
-    print("[5] Withdraw amount from account")
-    print("[6] Change pin of account")
-    print("[7] Logout from current account")
-    print("[8] Exit from current session\n")
+        user_choice = int(input("Enter your choice: "))
 
-    user_choice = int(input("Enter your choice: "))
-
-    match user_choice:
-        case 1:
-            user_name = input("Enter your name: ")
-            user_acc_no = int(input("Enter account number: "))
-            for acc in my_acc.accounts:
-                if acc.acc_no == user_acc_no:
-                    print("\nAccount already exists!\n")
-                    break
-            else:
-                user_pin = int(input("Enter user pin: "))
-                user_balance = int(input("Deposit initial balance: "))
-
-                if user_balance < 2500:
-                    print("\nRegistration Failed!")
-                    print("Security deposit while creating account is Rs.2500\n")
-                
+        match user_choice:
+            case 1:
+                user_name = input("Enter your name: ")
+                user_acc_no = int(input("Enter account number: "))
+                for acc in my_acc.accounts:
+                    if acc.acc_no == user_acc_no:
+                        print("\nAccount already exists!\n")
+                        break
                 else:
-                    my_acc.create_acc(user_name,user_acc_no,user_pin,user_balance)
+                    user_pin = int(input("Enter user pin: "))
+                    user_balance = int(input("Deposit initial balance: "))
 
-        case 2:
-            user_acc_no = int(input("Enter account number to login: "))
-            user_pin = int(input("Enter your pin: "))
+                    if user_balance < 2500:
+                        print("\nRegistration Failed!")
+                        print("Security deposit while creating account is Rs.2500\n")
+                    
+                    else:
+                        my_acc.create_acc(user_name,user_acc_no,user_pin,user_balance)
 
-            current_user = my_acc.login(user_acc_no,user_pin)
+            case 2:
+                user_acc_no = int(input("Enter account number to login: "))
+                user_pin = int(input("Enter your pin: "))
+                current_user = my_acc.login(user_acc_no,user_pin)
 
-        case 3:
-            if current_user:
-                current_user.view_balance()
-            
-            else:
-                print("Please login to check account balance.")
-            
-        case 4:
-            if current_user:
-                amount = int(input("Enter how much amount to deposit: "))
+            case 3:
+                if ATMsystem.require_login(current_user,"check accout balance.\n"):
+                    current_user.view_balance()
+                
+            case 4:
+                if ATMsystem.require_login(current_user,"deposit money in your account.\n"):
+                    amount = int(input("Enter how much amount to deposit: "))
 
-                if amount >= 2000:
                     current_user.deposit(amount)
-                
-                else:
-                    print("You need to deposit atleast Rs.2000 on each transaction.\n")    
 
-            else:
-                print("Please login to deposit money in your account.\n")
-        
-        case 5:
-            if current_user:
-                amount = int(input("Enter how much amount to withdraw: "))
-
-                if amount < 3000 :
-                    print("You need to withdraw atleast Rs.3000 on each transaction.\n")
-                
-                elif amount > (current_user.balance -  2500):
-                    print("Insufficient Balance. You need atleast Rs.2500 in account for security.")
-                
-                else:
+            case 5:
+                if ATMsystem.require_login(current_user,"withdraw money from your account.\n"):
+                    amount = int(input("Enter how much amount to withdraw: "))
                     current_user.withdraw(amount)
-            else:
-                print("Please login to withdraw money from you account.\n")
 
-        case 6:
-            if current_user:
-                old_pin = int(input("Enter previous pin to confirm: "))
+            case 6:
+                if ATMsystem.require_login(current_user,"change PIN.\n"):
+                    current_user.change_pin()
 
-                if current_user.acc_pin == old_pin:
-                    print("Please enter new pin to update.")
-                    new_pin = int(input("Enter new pin: "))
+            case 7:
+                if ATMsystem.require_login(current_user,"to logout your account.\n"):
+                    current_user = my_acc.logout(current_user)
 
-                    current_user.change_pin(new_pin)
-                
-                else:
-                    print("Wrong pin please try again.")
-            
-            else:
-                print("Please login to change pin.")
+            case 8:
+                print("\nThank you for using ATM System. Goodbye!\n")
+                break
 
-        case 7:
-            if current_user:
-                current_user = my_acc.logout(current_user)
-            
-            else:
-                print("Logout failed. Please login.")
-
-        case 8:
-            print("\nThank you for using ATM System. Goodbye!\n")
-            break
-
-        case _:
-            print("Please enter valid input!")
+            case _:
+                print("Please enter valid input!")
