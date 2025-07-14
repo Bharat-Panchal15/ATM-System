@@ -1,0 +1,14 @@
+[
+    {
+        "name": "John Doe",
+        "acc_no": 1001,
+        "acc_pin": 1234,
+        "balance": 8000
+    },
+    {
+        "name": "Maria Rose",
+        "acc_no": 1002,
+        "acc_pin": 5678,
+        "balance": 13000
+    }
+]

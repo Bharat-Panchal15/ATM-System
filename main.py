@@ -1,9 +1,24 @@
+import os
+import json
+
 class Account:
     def __init__(self,name,acc_no,pin,balance):
         self.name = name
         self.acc_no = acc_no
         self.acc_pin = pin
         self.balance = balance
+    
+    @staticmethod
+    def from_dict(acc):
+        return Account(acc.get('name','Unknown'),acc.get('acc_no','N.A.'),acc.get('acc_pin','N.A.'),acc.get('balance',0))
+    
+    def to_dict(self):
+        return {
+            'name':self.name,
+            'acc_no':self.acc_no,
+            'acc_pin':self.acc_pin,
+            'balance':self.balance
+            }
     
     def view_balance(self):
         print(f"\nAccount Balance for {self.name} is {self.balance}\n")
@@ -21,7 +36,7 @@ class Account:
             print("You need to withdraw atleast Rs.3000 on each transaction.\n")
             return
         
-        elif amount > (current_user.balance -  2500):
+        elif amount > (self.balance -  2500):
             print("Insufficient Balance. You need atleast Rs.2500 in account for security.")
             return
         
@@ -40,8 +55,33 @@ class Account:
         print(f"Pin change successfully to {new_pin}")
 
 class ATMsystem:
-    def __init__(self):
+    def __init__(self,filename='accounts.json'):
         self.accounts = []
+        self.filename = filename
+        self.load_data()
+    
+    def load_data(self):
+        if os.path.exists(self.filename):
+            try:
+                with open(self.filename,'r') as file:
+                    data = json.load(file)
+                    self.accounts = [Account.from_dict(acc) for acc in data]
+
+            except json.JSONDecodeError:
+                print("Error: Corrupt File.Starting fresh.\n")
+                self.accounts = []
+        
+        else:
+            self.accounts = []
+    
+    def save_data(self):
+        try:
+            with open(self.filename,'w') as file:
+                data = [acc.to_dict() for acc in self.accounts]
+                json.dump(data,file,indent=4)
+
+        except Exception as e:
+            print(f"Error: {e}")
     
     @staticmethod
     def require_login(current_user,action_desc="perform this action"):
@@ -53,6 +93,7 @@ class ATMsystem:
     def create_acc(self,name,acc_no,pin,balance):
         new_acc = Account(name,acc_no,pin,balance)
         self.accounts.append(new_acc)
+        self.save_data()
         print(f"\n✅ Account created successfully for {name}\n")
     
     def login(self,acc_no,pin):
@@ -102,6 +143,7 @@ if __name__ == "__main__":
                     
                     else:
                         my_acc.create_acc(user_name,user_acc_no,user_pin,user_balance)
+                        my_acc.save_data()
 
             case 2:
                 user_acc_no = int(input("Enter account number to login: "))
@@ -115,21 +157,23 @@ if __name__ == "__main__":
             case 4:
                 if ATMsystem.require_login(current_user,"deposit money in your account.\n"):
                     amount = int(input("Enter how much amount to deposit: "))
-
                     current_user.deposit(amount)
+                    my_acc.save_data()
 
             case 5:
                 if ATMsystem.require_login(current_user,"withdraw money from your account.\n"):
                     amount = int(input("Enter how much amount to withdraw: "))
                     current_user.withdraw(amount)
+                    my_acc.save_data()
 
             case 6:
                 if ATMsystem.require_login(current_user,"change PIN.\n"):
                     current_user.change_pin()
+                    my_acc.save_data()
 
             case 7:
                 if ATMsystem.require_login(current_user,"to logout your account.\n"):
-                    current_user = my_acc.logout(current_user)
+                    current_user = my_acc.logout()
 
             case 8:
                 print("\nThank you for using ATM System. Goodbye!\n")
